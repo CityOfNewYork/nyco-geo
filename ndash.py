@@ -30,6 +30,7 @@ def findFile(year):
             print(e.args)
             year = year -1
         else:
+            print("connection a success!")
             success=True
             parser=urllister.URLLister()
             parser.feed(usock.read())
@@ -40,9 +41,17 @@ def findFile(year):
     filename=tiger_path + str(year) + "/ZCTA5/" + zipfile[0]
     return filename
 
-
 ## Get path for a TIGER file to download
 tiger_zcta=findFile(cur_date.year)
 print(tiger_zcta)
 
 ## Download the zip file
+print("downloading the shapefile")
+download=urllib2.urlopen(tiger_zcta)
+data=download.read()
+
+##Save the file
+print("saving the zipfile")
+save_file=open("test.zip", "wb")
+save_file.write(data)
+save_file.close()
