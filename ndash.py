@@ -18,6 +18,8 @@ cur_date = datetime.datetime.now()
 def findFile(year):
     tiger_path="https://www2.census.gov/geo/tiger/TIGER"
 
+    arr_file=[]
+
     success=False
 
     while success==False:
@@ -30,6 +32,7 @@ def findFile(year):
             print(e.args)
             year = year -1
         else:
+            arr_file.insert(len(arr_file), tiger_path + str(year) + "/ZCTA5/")
             print("connection a success!")
             success=True
             parser=urllister.URLLister()
@@ -38,20 +41,30 @@ def findFile(year):
             parser.close()
             zipfile=[s for s in parser.urls if ".zip" in s]
 
-    filename=tiger_path + str(year) + "/ZCTA5/" + zipfile[0]
-    return filename
+    arr_file=arr_file + zipfile
 
-## Get path for a TIGER file to download
+##    filename=tiger_path + str(year) + "/ZCTA5/" + zipfile[0]
+    return arr_file
+
+##Takes a url and downloads the file to the local repository
+def downloadFile(file_list):
+    ## Download the zip file
+    print("downloading the shapefile")
+    download=urllib2.urlopen(file_list[0] + file_list[1])
+    data=download.read()
+
+    ##Save the file
+    print("saving the zipfile")
+    save_file=open(file_list[1], "wb")
+    save_file.write(data)
+    save_file.close()
+
+##########
+
+## Get list containing the path of zip file and the zip file name
 tiger_zcta=findFile(cur_date.year)
 print(tiger_zcta)
 
-## Download the zip file
-print("downloading the shapefile")
-download=urllib2.urlopen(tiger_zcta)
-data=download.read()
+downloadFile(tiger_zcta)
 
-##Save the file
-print("saving the zipfile")
-save_file=open("test.zip", "wb")
-save_file.write(data)
-save_file.close()
+
