@@ -6,6 +6,7 @@
 import os
 import datetime
 import censusdata
+import opendata
 
 # Get the current working directory
 os.getcwd()
@@ -18,10 +19,10 @@ cur_date = datetime.datetime.now()
 tiger_zcta=censusdata.findFile(cur_date.year)
 print(tiger_zcta)
 
-censusdata.downloadFile(tiger_zcta)
-print("FILE DOWNLOADED")
-# make a call to extract the 
-# extractFile(tiger_zcta[1])
+if censusdata.downloadFile(tiger_zcta):
+    print(tiger_zcta[1] + "Successfully Downloaded")
 
-
-
+	# extract the file
+	censusdata.extractFile(tiger_zcta[1])
+else:
+	print('Something went wrong. Inform the team.')
