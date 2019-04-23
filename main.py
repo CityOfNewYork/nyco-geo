@@ -14,15 +14,26 @@ os.getcwd()
 cur_date = datetime.datetime.now()
 
 #####
-# TIGER Census Data Set Download and Extraction
-# Get list containing the path of zip file and the zip file name
-zcta_url=ndash_func.findFile(cur_date.year)
+# TIGER Zip Code Tabulation Areas Census Data Set Download and Extraction
+zcta_url=ndash_func.findFile(cur_date.year, 'ZCTA5')
 zcta_fn=ndash_func.downloadFile(zcta_url)
 
 # download the tiger files and pass the output name
 if zcta_fn != '':
 	# extract the file
 	ndash_func.extractFile(zcta_fn)
+else:
+	print('Something went wrong. Inform the team.')
+
+#####
+# TIGER County Census Data Set Download and Extraction
+county_url=ndash_func.findFile(cur_date.year, 'COUNTY')
+county_fn=ndash_func.downloadFile(county_url)
+
+# download the tiger files and pass the output name
+if county_fn != '':
+	# extract the file
+	ndash_func.extractFile(county_fn)
 else:
 	print('Something went wrong. Inform the team.')
 
