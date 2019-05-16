@@ -1,3 +1,9 @@
 *.zip
 *.pyc
+*.geojson
+
 .env
+
+.DS_Store
+.python-version
+.vscode/
