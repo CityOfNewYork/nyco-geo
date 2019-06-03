@@ -11,7 +11,6 @@ from glob import glob
 
 # Get the current working directory
 os.getcwd()
-print(os.getcwd())
 
 cur_date = datetime.datetime.now()
 
@@ -104,6 +103,12 @@ nyc_zipcodes.rename(columns={
   'INTPTLAT10_2' : 'INTPTLAT10',
   'INTPTLON10_2' : 'INTPTLON10'
   }, inplace=True)
+
+# REMOVE: Rows that do not contain Community District
+nyc_zipcodes = nyc_zipcodes[nyc_zipcodes['CD'].str.contains("Community District")]
+
+# REPROJECT to New York Long Island
+nyc_zipcodes = nyc_zipcodes.to_crs(epsg=2263)
 
 # REARRANGE: column order
 nyc_zipcodes = nyc_zipcodes[[
