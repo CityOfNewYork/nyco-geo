@@ -4,6 +4,7 @@
 ## Importing necessary libraries and files
 import os
 import datetime
+import re
 import ndash_func
 import geopandas as gpd
 import matplotlib.pyplot as plt
@@ -94,6 +95,8 @@ nyc_zipcodes['NAME'] = nyc_zipcodes['NAME'].str.replace('Richmond','Staten Islan
 nyc_zipcodes[['NAMELSAD10','NBH']] = nyc_zipcodes['NAMELSAD10'].str.split('--',expand=True)
 nyc_zipcodes['NBH'] = nyc_zipcodes['NBH'].str.replace(' PUMA','')
 
+print(list(nyc_zipcodes))
+
 # RENAME: columns
 nyc_zipcodes.rename(columns={
   'NAMELSAD10':'CD',
@@ -107,6 +110,21 @@ nyc_zipcodes.rename(columns={
 # REMOVE: Rows that do not contain Community District
 nyc_zipcodes = nyc_zipcodes[nyc_zipcodes['CD'].str.contains("Community District")]
 
+# ADD: Comma separated community district column
+nyc_zipcodes[['CD','CD_CODE']] = nyc_zipcodes['CD'].str.split('District ',expand=True)
+nyc_zipcodes['CD_CODE'] = nyc_zipcodes['CD_CODE'].str.replace(' & ',',')
+
+# Add Manhattan code to each integer code
+nyc_zipcodes['CD_CODE'] = nyc_zipcodes['CD_CODE'].str.replace(r'(?is)[0-9]+2', r'M\g<0>')
+nyc_zipcodes['CD_CODE'] = nyc_zipcodes['CD_CODE'].str.replace(r'(?is)\b\d\b', r'M0\g<0>')
+nyc_zipcodes['CD_CODE'] = nyc_zipcodes['CD_CODE'].str.replace(r'^[0-9]{1,2}', r'M\g<0>')
+
+# update the borough code for each code
+nyc_zipcodes.loc[nyc_zipcodes.BORO == 'Bronx', 'CD_CODE'] = nyc_zipcodes['CD_CODE'].str.replace('M','B')
+nyc_zipcodes.loc[nyc_zipcodes.BORO == 'Brooklyn', 'CD_CODE'] = nyc_zipcodes['CD_CODE'].str.replace('M','K')
+nyc_zipcodes.loc[nyc_zipcodes.BORO == 'Queens', 'CD_CODE'] = nyc_zipcodes['CD_CODE'].str.replace('M','Q')
+nyc_zipcodes.loc[nyc_zipcodes.BORO == 'Staten Island', 'CD_CODE'] = nyc_zipcodes['CD_CODE'].str.replace('M','S')
+
 # REPROJECT to New York Long Island
 nyc_zipcodes = nyc_zipcodes.to_crs(epsg=2263)
 
@@ -115,6 +133,7 @@ nyc_zipcodes = nyc_zipcodes[[
 'ZCTA5CE10',
 'BORO',
 'CD',
+'CD_CODE',
 'NBH',
 'STATEFP',
 'COUNTYFP',
@@ -134,7 +153,7 @@ plt.show()
 # EXPORT: GeoJSON
 nyc_zipcodes.to_file("nyco-nyc_zipcodes.geojson", driver='GeoJSON')
 
-###############
+##############
 # CLEAN: remove the downloaded files
 ext = [
 '*.cpg',
