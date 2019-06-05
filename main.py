@@ -90,6 +90,7 @@ nyc_zipcodes=nyc_zcta_puma_dissolved.filter([
 # UPDATE: Borough Names
 nyc_zipcodes['NAME'] = nyc_zipcodes['NAME'].str.replace('Kings','Brooklyn')
 nyc_zipcodes['NAME'] = nyc_zipcodes['NAME'].str.replace('Richmond','Staten Island')
+nyc_zipcodes['NAME'] = nyc_zipcodes['NAME'].str.replace('New York','Manhattan')
 
 # SPLIT: NAMESLAD into Community Districts and Neighborhoods
 nyc_zipcodes[['NAMELSAD10','NBH']] = nyc_zipcodes['NAMELSAD10'].str.split('--',expand=True)
@@ -126,7 +127,7 @@ nyc_zipcodes.loc[nyc_zipcodes.BORO == 'Queens', 'CD_CODE'] = nyc_zipcodes['CD_CO
 nyc_zipcodes.loc[nyc_zipcodes.BORO == 'Staten Island', 'CD_CODE'] = nyc_zipcodes['CD_CODE'].str.replace('M','S')
 
 # REPROJECT to New York Long Island
-nyc_zipcodes = nyc_zipcodes.to_crs(epsg=2263)
+# nyc_zipcodes = nyc_zipcodes.to_crs(epsg=2263)
 
 # REARRANGE: column order
 nyc_zipcodes = nyc_zipcodes[[
@@ -147,8 +148,8 @@ nyc_zipcodes = nyc_zipcodes[[
 ]]
 
 # PLOT: the merged dataset
-nyc_zipcodes.plot()
-plt.show()
+# nyc_zipcodes.plot()
+# plt.show()
 
 # EXPORT: GeoJSON
 nyc_zipcodes.to_file("nyco-nyc_zipcodes.geojson", driver='GeoJSON')
