@@ -80,30 +80,32 @@ def downloadZip(file_url):
 	con=urllib2.urlopen(file_url)
 
 	filename=file_url.split('/')[-1]
-
-	print('Downloading ' + filename)
-	total_size = con.info().getheader('Content-Length').strip()
-	total_size = int(total_size)
-
-	bytes_so_far = 0
-
 	save_file=open(filename, "wb")
+  	save_file.write(con.read())
 
-	while bytes_so_far < total_size:
-	    buff = con.read(8192)
-	    save_file.write(buff)
-	    bytes_so_far += len(buff)
+	# print('Downloading ' + filename)
+ #        total_size = con.info().getheader('Content-Length').strip()
+	# total_size = int(total_size)
 
-	    percent = float(bytes_so_far) / total_size
-	    percent = round(percent*100, 2)
-	    sys.stdout.write("Downloaded %d of %d bytes (%0.2f%%)\r" % (bytes_so_far, total_size, percent))
+	# bytes_so_far = 0
 
-	save_file.close()
+	# save_file=open(filename, "wb")
 
-	if bytes_so_far == total_size:
-		print(filename + ' successfully downloaded!')
-		return filename
+	# while bytes_so_far < total_size:
+	#     buff = con.read(8192)
+	#     save_file.write(buff)
+	#     bytes_so_far += len(buff)
 
+	#     percent = float(bytes_so_far) / total_size
+	#     percent = round(percent*100, 2)
+	#     sys.stdout.write("Downloaded %d of %d bytes (%0.2f%%)\r" % (bytes_so_far, total_size, percent))
+
+	# save_file.close()
+
+	# if bytes_so_far == total_size:
+	# 	print(filename + ' successfully downloaded!')
+	# 	return filename
+	return filename
 ###############
 # Used when the URL triggers a download of a zip file
 def downloadUrl(file_url):

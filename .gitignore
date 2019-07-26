@@ -1,6 +1,14 @@
 *.zip
 *.pyc
 *.geojson
+*.cpg
+*.dbf
+*.prj
+*.shp
+*.shx
+*.zip
+*.xml
+*.xlsx
 
 .env
 

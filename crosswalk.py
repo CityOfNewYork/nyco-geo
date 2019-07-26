@@ -49,7 +49,9 @@ zcta_puma = zcta_puma.round(decimals = 2)
 
 
 ## Create a table which one row for every ZCTA/PUMA combination
-zcta_puma_combo = zcta_puma.drop_duplicates(subset = ['ZCTA5', 'PUMA5CE'])
+# zcta_puma_combo = zcta_puma.drop_duplicates(subset = ['ZCTA5', 'PUMA5CE'])
+zcta_puma_combo = zcta_puma.copy()
+zcta_puma_combo = zcta_puma_combo.drop_duplicates(subset = ['ZCTA5', 'PUMA5CE'])
 
 ## Create a column of NYC Borough name 
 
@@ -85,9 +87,13 @@ zcta_puma = zcta_puma_combo[zcta_puma_combo['assigned'] == 1]
 
 ## Exporting two dfs into one excel file
 
+print(zcta_puma)
+
 # Create a Pandas Excel writer using XlsxWriter as the engine.
 writer = pd.ExcelWriter('zcta_puma_crosswalk.xlsx', engine='xlsxwriter')
 
 # Write each dataframe to a different worksheet.
 zcta_puma_combo.to_excel(writer, sheet_name='zcta_puma_combo', index = False)
 zcta_puma.to_excel(writer, sheet_name='zcta_puma', index = False)
+
+writer.save()
