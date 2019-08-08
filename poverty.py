@@ -5,6 +5,9 @@ import re
 import pandas as pd
 import ast
 
+###
+# Gets the NYCgov Poverty Rate data from NYCO website
+###
 def getNYCGovPoverty():
   # read the data from the nycopp site
   jsfile = "https://www1.nyc.gov/assets/opportunity/js/agencies/cd_data.js"
@@ -51,8 +54,46 @@ def getNYCGovPoverty():
   nycgov_df = nycgov_df[collist]
 
   nycgov_df.rename(columns={
-      12: 'nycgov_poverty_rate',
+      12: 'nycgov_cd_pov_rate',
       1: 'community_districts'
   }, inplace=True)
 
   return nycgov_df
+
+###
+# Connects to the Census API and gets the population in poverty and total pop, calculates the poverty rate
+###
+def getCensusPoverty(year, zipcodes):
+  success = False
+  while success == False:
+    try:
+      url = 'https://api.census.gov/data/' + str(year) + '/acs/acs5?get=B06012_002E,B06012_001E&for=zip+code+tabulation+area:' + str(zipcodes)
+      print('Connecting to ' + url)
+      con = urllib2.urlopen(url)
+    except urllib2.HTTPError, e:
+      print(e)
+      year = year - 1
+    else:
+      print("Connection a success!")
+      print(year)
+      success = True
+      census_data = con.read()
+      con.close()
+
+  # make a call to the api to see if anything returns. If it doesn't decrement the year
+  census_data = ast.literal_eval(census_data)
+  census_data.pop(0)
+
+  # convert the response into a dataframe
+  census_df = pd.DataFrame(census_data)
+  census_df.rename(columns={
+      0: 'census_total_pov',
+      1: 'census_total_pop',
+      2: 'zcta'
+  }, inplace=True)
+
+  # create the poverty rate column by dividing total in pov by the total pop
+  census_df['census_pov_rate'] = (pd.to_numeric(
+      census_df['census_total_pov'])/pd.to_numeric(census_df['census_total_pop']))*100
+
+  return census_df

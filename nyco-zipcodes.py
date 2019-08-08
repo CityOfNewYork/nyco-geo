@@ -6,6 +6,7 @@ import os
 import datetime
 import re
 import ndash_func
+import poverty
 import pandas as pd
 import geopandas as gpd
 import matplotlib
@@ -31,11 +32,11 @@ counties = [
 # COUNTY Download and Extraction
 print('#####\n')
 print('Downloading and extracting US County Data')
-county_url=ndash_func.findFile(cur_date.year, 'COUNTY')
-ndash_func.downloadFile(county_url)
-if ndash_func.fileExists(county_url):
-  county_file=ndash_func.extractFile(county_url)
-  print(county_file)
+# county_url=ndash_func.findFile(cur_date.year, 'COUNTY')
+# ndash_func.downloadFile(county_url)
+# if ndash_func.fileExists(county_url):
+#   county_file=ndash_func.extractFile(county_url)
+#   print(county_file)
 
 county_file='tl_2018_us_county'
 county_shp = gpd.read_file(county_file + '.shp')
@@ -47,11 +48,11 @@ nyc_counties=county_shp[(county_shp['NAME'].isin(counties)) & (county_shp['STATE
 # PUBLIC USE MICRODATA AREAS (PUMA) Download and Extraction
 print('#####\n')
 print('Downloading and extracting PUMA Data')
-puma_url=ndash_func.findFile(cur_date.year, 'PUMA')
-ndash_func.downloadFile(puma_url)
-if ndash_func.fileExists(puma_url):
-  puma_file=ndash_func.extractFile(puma_url)
-  print(puma_file)
+# puma_url=ndash_func.findFile(cur_date.year, 'PUMA')
+# ndash_func.downloadFile(puma_url)
+# if ndash_func.fileExists(puma_url):
+#   puma_file=ndash_func.extractFile(puma_url)
+#   print(puma_file)
 
 puma_file='tl_2018_36_puma10'
 puma_shp = gpd.read_file(puma_file + '.shp')
@@ -64,18 +65,17 @@ nyc_puma = gpd.overlay(puma_shp, nyc_counties, how='intersection')
 # TIGER Zip Code Tabulation Areas Census Data Set Download and Extraction
 print('#####\n')
 print('Downloading and extracting US ZCTA Data')
-zcta_url=ndash_func.findFile(cur_date.year, 'ZCTA5')
-ndash_func.downloadFile(zcta_url)
-if ndash_func.fileExists(zcta_url):
-  zcta_file=ndash_func.extractFile(zcta_url)
-  print(zcta_file)
+# zcta_url=ndash_func.findFile(cur_date.year, 'ZCTA5')
+# ndash_func.downloadFile(zcta_url)
+# if ndash_func.fileExists(zcta_url):
+#   zcta_file=ndash_func.extractFile(zcta_url)
+#   print(zcta_file)
 
 zcta_file='tl_2018_us_zcta510'
 zcta_shp = gpd.read_file(zcta_file + '.shp')
 
 ###############
 # OVERLAY: Overlaying PUMA and counties on top of ZCTA
-print()
 nyc_zcta_puma = gpd.overlay(nyc_puma, zcta_shp, how='intersection')
 
 # DISSOLVE: by zipcode
@@ -197,10 +197,42 @@ nyc_zip_crosswalk = nyc_zip_crosswalk[[
   'geometry'
   ]]
 
-print(nyc_zip_crosswalk)
-print(type(nyc_zip_crosswalk))
-print(nyc_zip_crosswalk.columns.values)
+##############
+# NYCGOV: attach the NYCgov poverty rate
+print('###### Adding the NYCgov Poverty')
+nycgov_df = poverty.getNYCGovPoverty()
 
+# copy the poverty rate to the main df
+for i, cd in nycgov_df.iterrows():
+  nyc_zip_crosswalk.loc[nyc_zip_crosswalk['community_districts'] == cd.community_districts, 'nycgov_cd_pov_rate'] = cd.nycgov_cd_pov_rate
+
+##############
+# CENSUS: attach the Census poverty data
+print('###### Adding the Census Poverty')
+census_df = poverty.getCensusPoverty(cur_date.year, ','.join(nyc_zip_crosswalk.zcta.values.tolist()))
+nyc_zip_crosswalk = nyc_zip_crosswalk.merge(census_df, on='zcta', how='left')
+
+# calculate the poverty rate based on the community district
+cd_df = pd.DataFrame()
+cds = nyc_zip_crosswalk['community_districts'].unique()
+
+for cd in cds:
+  temp_df = nyc_zip_crosswalk.loc[nyc_zip_crosswalk['community_districts'] == cd][[
+      'community_districts', 'census_total_pov', 'census_total_pop']]
+  temp_df['census_total_pov'] = pd.to_numeric(temp_df['census_total_pov'])
+  temp_df['census_total_pop'] = pd.to_numeric(temp_df['census_total_pop'])
+  temp_df_summed = temp_df.groupby(temp_df.community_districts).sum()
+  cd_df = cd_df.append(temp_df_summed, sort=False)
+
+# calculate the povertt rate for the cd
+cd_df['census_cd_pov_rate'] = (
+    cd_df['census_total_pov']/cd_df['census_total_pop'])*100
+cd_df.reset_index(level=0, inplace=True)
+cd_df = cd_df[['community_districts', 'census_cd_pov_rate']]
+
+nyc_zip_crosswalk = nyc_zip_crosswalk.merge(cd_df, on='community_districts', how='left')
+
+print(nyc_zip_crosswalk)
 
 ###############
 # EXPORT: GeoJSON
@@ -213,14 +245,14 @@ nyc_zip_crosswalk.to_file("nyco-zipcodes.geojson", driver='GeoJSON')
 print('#####\n')
 print('Removing shapefiles and zips\n')
 ext = [
-'*.cpg',
-'*.dbf',
-'*.prj',
-'*.shp',
-'*.shx',
-'*.zip',
-'*.xml'
-]
+  '*.cpg',
+  '*.dbf',
+  '*.prj',
+  '*.shp',
+  '*.shx',
+  '*.zip',
+  '*.xml'
+  ]
 
 for e in ext:
   for file in glob(e):
