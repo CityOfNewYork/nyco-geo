@@ -27,7 +27,11 @@ def getNYCGovPoverty():
   nycgov_list = [ast.literal_eval(i) for i in nycgov_list]
 
   # create a dataframe
-  nycgov_df = pd.DataFrame(nycgov_list)[[11, 12]]
+  nycgov_df = pd.DataFrame(nycgov_list)[[3, 11, 12]]
+
+  # only get the data that is 100% under poverty
+  nycgov_df = nycgov_df.loc[nycgov_df[3] == 'POVERTY']
+  
   # if the community district column does not contain any of the boroughs, then, remove it from the dataframe
   nycgov_df = nycgov_df[~nycgov_df[11].str.contains(
       'Manhattan|Bronx|Brooklyn|Queens|Staten') == False]

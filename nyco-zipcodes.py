@@ -32,13 +32,13 @@ counties = [
 # COUNTY Download and Extraction
 print('#####\n')
 print('Downloading and extracting US County Data')
-# county_url=ndash_func.findFile(cur_date.year, 'COUNTY')
-# ndash_func.downloadFile(county_url)
-# if ndash_func.fileExists(county_url):
-#   county_file=ndash_func.extractFile(county_url)
-#   print(county_file)
+county_url=ndash_func.findFile(cur_date.year, 'COUNTY')
+ndash_func.downloadFile(county_url)
+if ndash_func.fileExists(county_url):
+  county_file=ndash_func.extractFile(county_url)
+  print(county_file)
 
-county_file='tl_2018_us_county'
+# county_file='tl_2018_us_county'
 county_shp = gpd.read_file(county_file + '.shp')
 
 # EXTRACT: only the NYC counties that fall in NYS
@@ -48,13 +48,13 @@ nyc_counties=county_shp[(county_shp['NAME'].isin(counties)) & (county_shp['STATE
 # PUBLIC USE MICRODATA AREAS (PUMA) Download and Extraction
 print('#####\n')
 print('Downloading and extracting PUMA Data')
-# puma_url=ndash_func.findFile(cur_date.year, 'PUMA')
-# ndash_func.downloadFile(puma_url)
-# if ndash_func.fileExists(puma_url):
-#   puma_file=ndash_func.extractFile(puma_url)
-#   print(puma_file)
+puma_url=ndash_func.findFile(cur_date.year, 'PUMA')
+ndash_func.downloadFile(puma_url)
+if ndash_func.fileExists(puma_url):
+  puma_file=ndash_func.extractFile(puma_url)
+  print(puma_file)
 
-puma_file='tl_2018_36_puma10'
+# puma_file='tl_2018_36_puma10'
 puma_shp = gpd.read_file(puma_file + '.shp')
 puma_shp['PUMACE10']=puma_shp['PUMACE10'].astype(int)
 
@@ -65,13 +65,13 @@ nyc_puma = gpd.overlay(puma_shp, nyc_counties, how='intersection')
 # TIGER Zip Code Tabulation Areas Census Data Set Download and Extraction
 print('#####\n')
 print('Downloading and extracting US ZCTA Data')
-# zcta_url=ndash_func.findFile(cur_date.year, 'ZCTA5')
-# ndash_func.downloadFile(zcta_url)
-# if ndash_func.fileExists(zcta_url):
-#   zcta_file=ndash_func.extractFile(zcta_url)
-#   print(zcta_file)
+zcta_url=ndash_func.findFile(cur_date.year, 'ZCTA5')
+ndash_func.downloadFile(zcta_url)
+if ndash_func.fileExists(zcta_url):
+  zcta_file=ndash_func.extractFile(zcta_url)
+  print(zcta_file)
 
-zcta_file='tl_2018_us_zcta510'
+# zcta_file='tl_2018_us_zcta510'
 zcta_shp = gpd.read_file(zcta_file + '.shp')
 
 ###############
